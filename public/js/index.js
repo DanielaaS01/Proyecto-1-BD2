@@ -4,8 +4,10 @@
  * =============================================================
  */
 
+//const e = require("cors");
+
 // --- Variables Globales y Constantes ---
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:3000/api';
 let currentBookId = null; // ID del libro que está en el modal
 let carouselManager; // Instancia del gestor de carruseles
 
@@ -650,19 +652,20 @@ async function openModal(bookId) {
     document.getElementById('modal-cover').textContent = '...';
     
     try {
-        const [bookData, breakdownData] = await Promise.all([
+        const [bookData,/* breakdownData*/] = await Promise.all([
             fetchWithAuth(`/books/${bookId}`),
-            fetchWithAuth(`/interactions/breakdown/${bookId}`)
+            //fetchWithAuth(`/interactions/breakdown/${bookId}`)
         ]);
 
-        if (!bookData.success || !breakdownData.success) {
+        if (!bookData.success /*|| !breakdownData.success*/) {
             throw new Error(bookData.message || breakdownData.message || 'No se pudieron cargar los datos');
         }
+        console.log(bookData.data.book)
         
         const book = bookData.data.book;
-        const breakdown = breakdownData.data.breakdown;
-        const totalReviews = breakdownData.data.totalReviews;
-        const averageRating = book.averageRating || 0;
+        const breakdown = book.stats.totalViews || {};//breakdownData.data.breakdown;
+        const totalReviews = book.stats.totalRatings//breakdownData.data.totalReviews;
+        const averageRating = book.averageRating;
 
         document.getElementById('modal-title').textContent = book.title;
         document.getElementById('modal-author').textContent = book.author;
@@ -749,13 +752,16 @@ async function submitRating(newRating) {
             
             const [bookData, breakdownData] = await Promise.all([
                 fetchWithAuth(`/books/${currentBookId}`),
-                fetchWithAuth(`/interactions/breakdown/${currentBookId}`)
+                fetchWithAuth(`/interactions/user?limit=50`)
             ]);
 
             if (breakdownData.success && bookData.success) {
+                console.log(breakdownData.data.interactions.length)
+                console.log(bookData.data.book.stats.averageRating)
+                const currentBookRating = breakdownData.data.interactions.filter((book) => (book.bookId._id === currentBookId && book.interactionType ==="rating"))[0];
                 const book = bookData.data.book;
-                updateReviewsDisplay(book.averageRating, breakdownData.data.totalReviews, breakdownData.data.breakdown);
-                updateBookCardRating(currentBookId, book.averageRating);
+                updateReviewsDisplay(book.stats.averageRating, book.stats.totalRatings, book.stats.averageRating);
+                updateBookCardRating(currentBookId, book.stats.averageRating);
             }
             showRatingMessage();
             showRecommendations(currentBookId);
