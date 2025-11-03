@@ -7,13 +7,15 @@ import {
   getMostActiveUsers,
   recordBookView,
   recordBookRating,
-  addToWishlist
+  addToWishlist,
+  getReviewBreakdown // <-- AÑADIDO
 } from '../controllers/interactionController';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
 // Todas las rutas requieren autenticación
+router.get('/breakdown/:bookId', getReviewBreakdown);
 router.use(authenticate);
 
 // Rutas principales

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'; // <-- Importación necesaria
 import UserInteraction, { IUserInteraction, InteractionType } from '../models/UserInteraction';
 import Book from '../models/Book';
 import {
@@ -9,61 +10,57 @@ import {
 } from '../types/interaction';
 
 export class InteractionService {
+
   /**
-   * Registrar una interacción de usuario
+   * Registrar o actualizar una interacción de usuario (CORREGIDO)
    */
   static async recordInteraction(request: RecordInteractionRequest): Promise<InteractionResponse> {
     try {
       const { userId, bookId, interactionType, ratingValue, timeOnPage, sessionId } = request;
 
-      // Validaciones básicas
+      // 1. VALIDACIONES BÁSICAS
       if (!userId || !bookId || !interactionType || !sessionId) {
-        return {
-          success: false,
-          message: 'userId, bookId, interactionType y sessionId son requeridos'
-        };
+        return { success: false, message: 'userId, bookId, interactionType y sessionId son requeridos' };
       }
-
-      // Validar rating si es una interacción de rating
-      if (interactionType === 'rating' && (ratingValue === undefined || ratingValue < 1 || ratingValue > 5)) {
-        return {
-          success: false,
-          message: 'ratingValue es requerido y debe ser entre 1-5 para interacciones de rating'
-        };
-      }
-
-      // Validar timeOnPage si es una interacción de view
-      if (interactionType === 'view' && (timeOnPage === undefined || timeOnPage < 0)) {
-        return {
-          success: false,
-          message: 'timeOnPage es requerido para interacciones de view'
-        };
-      }
-
-      // Verificar que el libro existe
       const book = await Book.findById(bookId);
       if (!book) {
-        return {
-          success: false,
-          message: 'Libro no encontrado'
-        };
+        return { success: false, message: 'Libro no encontrado' };
       }
 
-      // Crear la interacción
-      const interaction = new UserInteraction({
-        userId,
-        bookId,
-        interactionType,
-        ratingValue,
-        timeOnPage,
-        sessionId,
-        timestamp: new Date()
-      });
+      let interaction: IUserInteraction | null;
 
-      await interaction.save();
+      // 2. LÓGICA DE INTERACCIÓN (CORREGIDA)
+      if (interactionType === 'rating') {
+        if (ratingValue === undefined || ratingValue < 1 || ratingValue > 5) {
+          return { success: false, message: 'ratingValue es requerido (1-5) para interacciones de rating' };
+        }
+        
+        // --- LÓGICA DE "UPSERT" PARA VALORACIONES ---
+        // (Quitamos .lean() para que devuelva un documento Mongoose completo)
+        interaction = await UserInteraction.findOneAndUpdate(
+          { userId, bookId, interactionType: 'rating' }, // El filtro
+          { $set: { ratingValue, sessionId, timestamp: new Date() } }, // Los datos
+          { new: true, upsert: true } // Opciones
+        );
 
-      // Actualizar métricas del libro si es necesario
-      await this.updateBookMetrics(bookId, interactionType, ratingValue);
+        // 3. RECALCULAR PROMEDIOS
+        await this.recalculateBookRatings(bookId); // <-- Esto ahora funciona
+
+      } else {
+        // --- LÓGICA DE CREACIÓN (COMO ANTES) PARA VISTAS O WISHLIST ---
+        if (interactionType === 'view' && (timeOnPage === undefined || timeOnPage < 0)) {
+          return { success: false, message: 'timeOnPage es requerido para interacciones de view' };
+        }
+
+        interaction = new UserInteraction({
+          userId, bookId, interactionType, timeOnPage, sessionId, timestamp: new Date()
+        });
+        await interaction.save();
+
+        if (interactionType === 'view') {
+          await Book.findByIdAndUpdate(bookId, { $inc: { viewCount: 1 } });
+        }
+      }
 
       return {
         success: true,
@@ -73,23 +70,13 @@ export class InteractionService {
 
     } catch (error: any) {
       console.error('Error en servicio de registro de interacción:', error);
-
       if (error.name === 'ValidationError') {
         const errors = Object.values(error.errors).map((err: any) => err.message);
-        return {
-          success: false,
-          message: 'Error de validación',
-          error: errors.join(', ')
-        };
+        return { success: false, message: 'Error de validación', error: errors.join(', ') };
       }
-
       if (error.name === 'CastError') {
-        return {
-          success: false,
-          message: 'ID de usuario o libro no válido'
-        };
+        return { success: false, message: 'ID de usuario o libro no válido' };
       }
-
       return {
         success: false,
         message: 'Error interno del servidor al registrar interacción',
@@ -99,35 +86,43 @@ export class InteractionService {
   }
 
   /**
-   * Actualizar métricas del libro basado en la interacción
+   * Recalcula el ratingCount y averageRating de un libro (CORREGIDO)
    */
-  private static async updateBookMetrics(bookId: string, interactionType: InteractionType, ratingValue?: number): Promise<void> {
+  private static async recalculateBookRatings(bookId: string): Promise<void> {
     try {
-      const updateData: any = {};
-
-      if (interactionType === 'view') {
-        updateData.$inc = { viewCount: 1 };
-      } else if (interactionType === 'rating' && ratingValue) {
-        // Calcular nuevo promedio de rating
-        const book = await Book.findById(bookId);
-        if (book) {
-          const newTotalRating = (book.averageRating * book.ratingCount) + ratingValue;
-          const newRatingCount = book.ratingCount + 1;
-          const newAverageRating = newTotalRating / newRatingCount;
-
-          updateData.averageRating = Math.round(newAverageRating * 10) / 10; // Redondear a 1 decimal
-          updateData.ratingCount = newRatingCount;
+      const stats = await UserInteraction.aggregate([
+        {
+          $match: {
+            bookId: new mongoose.Types.ObjectId(bookId), // <-- Necesitamos mongoose.Types
+            interactionType: 'rating'
+          }
+        },
+        {
+          $group: {
+            _id: '$bookId',
+            averageRating: { $avg: '$ratingValue' }, 
+            ratingCount: { $sum: 1 } 
+          }
         }
-      } else if (interactionType === 'wishlist') {
-        updateData.$inc = { wishlistCount: 1 };
+      ]);
+
+      let averageRating = 0;
+      let ratingCount = 0;
+
+      if (stats.length > 0) {
+        averageRating = Math.round(stats[0].averageRating * 10) / 10;
+        ratingCount = stats[0].ratingCount;
       }
 
-      if (Object.keys(updateData).length > 0) {
-        await Book.findByIdAndUpdate(bookId, updateData);
-      }
+      await Book.findByIdAndUpdate(bookId, {
+        $set: {
+          averageRating: averageRating,
+          ratingCount: ratingCount
+        }
+      });
 
     } catch (error) {
-      console.error('Error actualizando métricas del libro:', error);
+      console.error(`Error recalculando métricas para el libro ${bookId}:`, error);
     }
   }
 
@@ -137,9 +132,7 @@ export class InteractionService {
   static async getUserInteractions(request: UserInteractionsRequest): Promise<InteractionResponse> {
     try {
       const { userId, limit = 20, page = 1 } = request;
-
       const skip = (page - 1) * limit;
-
       const [interactions, total] = await Promise.all([
         UserInteraction.find({ userId })
           .populate('bookId')
@@ -149,33 +142,20 @@ export class InteractionService {
           .lean(),
         UserInteraction.countDocuments({ userId })
       ]);
-
       const totalPages = Math.ceil(total / limit);
-
       return {
         success: true,
         message: 'Interacciones del usuario obtenidas exitosamente',
         data: {
           interactions,
-          pagination: {
-            page,
-            limit,
-            total,
-            totalPages
-          }
+          pagination: { page, limit, total, totalPages }
         }
       };
-
     } catch (error: any) {
       console.error('Error en servicio de interacciones de usuario:', error);
-
       if (error.name === 'CastError') {
-        return {
-          success: false,
-          message: 'ID de usuario no válido'
-        };
+        return { success: false, message: 'ID de usuario no válido' };
       }
-
       return {
         success: false,
         message: 'Error al obtener interacciones del usuario',
@@ -190,9 +170,7 @@ export class InteractionService {
   static async getBookInteractions(request: BookInteractionsRequest): Promise<InteractionResponse> {
     try {
       const { bookId, limit = 20, page = 1 } = request;
-
       const skip = (page - 1) * limit;
-
       const [interactions, total] = await Promise.all([
         UserInteraction.find({ bookId })
           .populate('userId', 'username preferences.favoriteGenres')
@@ -202,33 +180,20 @@ export class InteractionService {
           .lean(),
         UserInteraction.countDocuments({ bookId })
       ]);
-
       const totalPages = Math.ceil(total / limit);
-
       return {
         success: true,
         message: 'Interacciones del libro obtenidas exitosamente',
         data: {
           interactions,
-          pagination: {
-            page,
-            limit,
-            total,
-            totalPages
-          }
+          pagination: { page, limit, total, totalPages }
         }
       };
-
     } catch (error: any) {
       console.error('Error en servicio de interacciones de libro:', error);
-
       if (error.name === 'CastError') {
-        return {
-          success: false,
-          message: 'ID de libro no válido'
-        };
+        return { success: false, message: 'ID de libro no válido' };
       }
-
       return {
         success: false,
         message: 'Error al obtener interacciones del libro',
@@ -244,8 +209,9 @@ export class InteractionService {
     try {
       const matchStage: any = {};
       
-      if (userId) matchStage.userId = userId;
-      if (bookId) matchStage.bookId = bookId;
+      // Corregido: convertir strings a ObjectIds para la consulta
+      if (userId) matchStage.userId = new mongoose.Types.ObjectId(userId as string); 
+      if (bookId) matchStage.bookId = new mongoose.Types.ObjectId(bookId as string); 
 
       const stats = await UserInteraction.aggregate([
         { $match: matchStage },
@@ -266,7 +232,6 @@ export class InteractionService {
           }
         }
       ]);
-
       const result = stats[0] || {
         totalViews: 0,
         totalRatings: 0,
@@ -274,7 +239,6 @@ export class InteractionService {
         averageRating: 0,
         totalInteractions: 0
       };
-
       return {
         success: true,
         data: {
@@ -284,10 +248,8 @@ export class InteractionService {
           averageRating: Math.round(result.averageRating * 10) / 10 || 0
         }
       };
-
     } catch (error: any) {
       console.error('Error obteniendo estadísticas de interacciones:', error);
-
       return {
         success: false,
         message: 'Error al obtener estadísticas de interacciones'
@@ -316,34 +278,72 @@ export class InteractionService {
             as: 'user'
           }
         },
-        {
-          $unwind: '$user'
-        },
+        { $unwind: '$user' },
         {
           $project: {
             'user.password': 0,
             'user.__v': 0
           }
         },
-        {
-          $sort: { interactionCount: -1, lastActivity: -1 }
-        },
-        {
-          $limit: limit
-        }
+        { $sort: { interactionCount: -1, lastActivity: -1 } },
+        { $limit: limit }
       ]);
-
       return {
         success: true,
         data: activeUsers
       };
-
     } catch (error: any) {
       console.error('Error obteniendo usuarios activos:', error);
-
       return {
         success: false,
         message: 'Error al obtener usuarios activos'
+      };
+    }
+  }
+
+  /**
+   * Obtener el desglose de calificaciones (rating breakdown) para un libro
+   */
+  static async getReviewBreakdown(bookId: string): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(bookId)) {
+        return { success: false, message: 'ID de libro no válido' };
+      }
+      const breakdown = await UserInteraction.aggregate([
+        {
+          $match: {
+            bookId: new mongoose.Types.ObjectId(bookId),
+            interactionType: 'rating'
+          }
+        },
+        {
+          $group: {
+            _id: '$ratingValue', 
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: -1 } }
+      ]);
+      const formattedData: { [key: number]: number } = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      let total = 0;
+      breakdown.forEach(item => {
+        if (item._id >= 1 && item._id <= 5) {
+          formattedData[item._id] = item.count;
+          total += item.count;
+        }
+      });
+      return {
+        success: true,
+        data: {
+          breakdown: formattedData,
+          totalReviews: total
+        }
+      };
+    } catch (error: any) {
+      console.error('Error obteniendo desglose de reseñas:', error);
+      return {
+        success: false,
+        message: 'Error al obtener desglose de reseñas'
       };
     }
   }

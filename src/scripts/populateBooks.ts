@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Book from '../models/Book';
+import Book from '../models/Book'; // Asegúrate que la ruta a 'models' sea correcta, ej: ../models/Book
 
-dotenv.config();
+// Carga las variables de entorno desde la raíz del proyecto
+dotenv.config({ path: '.env' }); 
 
-// Datos de libros reales - 75 libros de diferentes géneros
+// Usamos la API de Open Library Covers (por ISBN) - estas URLs son estables
 const sampleBooks = [
   // 📖 CIENCIA FICCIÓN
   {
@@ -14,10 +15,8 @@ const sampleBooks = [
     description: "La historia de la Fundación, un grupo de científicos que busca preservar el conocimiento humano ante el colapso del Imperio Galáctico.",
     publisher: "Ediciones B",
     publishedYear: 1951,
-    coverImage: "/covers/fundacion.jpg",
-    averageRating: 4.5,
-    ratingCount: 12500,
-    viewCount: 45000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780553293357-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Dune",
@@ -26,10 +25,8 @@ const sampleBooks = [
     description: "En el desértico planeta Arrakis, la lucha por la especia melange desata una épica saga de poder, religión y ecología.",
     publisher: "Debolsillo",
     publishedYear: 1965,
-    coverImage: "/covers/dune.jpg",
-    averageRating: 4.7,
-    ratingCount: 89000,
-    viewCount: 120000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780441172719-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "1984",
@@ -38,10 +35,8 @@ const sampleBooks = [
     description: "Una visión distópica del futuro donde el gobierno controla cada aspecto de la vida de las personas.",
     publisher: "Debate",
     publishedYear: 1949,
-    coverImage: "/covers/1984.jpg",
-    averageRating: 4.6,
-    ratingCount: 150000,
-    viewCount: 200000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Un mundo feliz",
@@ -50,10 +45,8 @@ const sampleBooks = [
     description: "Una sociedad futura donde los seres humanos son creados en laboratorios y condicionados para ser felices.",
     publisher: "Debolsillo",
     publishedYear: 1932,
-    coverImage: "/covers/mundo-feliz.jpg",
-    averageRating: 4.3,
-    ratingCount: 78000,
-    viewCount: 95000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780060850524-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "El juego de Ender",
@@ -62,10 +55,8 @@ const sampleBooks = [
     description: "Un niño prodigio es entrenado en una escuela militar espacial para liderar la lucha contra una raza alienígena.",
     publisher: "Ediciones B",
     publishedYear: 1985,
-    coverImage: "/covers/ender-game.jpg",
-    averageRating: 4.4,
-    ratingCount: 67000,
-    viewCount: 89000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780812550702-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
 
   // 🧙 FANTASÍA
@@ -76,10 +67,8 @@ const sampleBooks = [
     description: "La épica aventura de Frodo Bolsón para destruir el Anillo Único en las Grietas del Destino.",
     publisher: "Minotauro",
     publishedYear: 1954,
-    coverImage: "/covers/senor-anillos.jpg",
-    averageRating: 4.8,
-    ratingCount: 250000,
-    viewCount: 300000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780618640157-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Harry Potter y la piedra filosofal",
@@ -88,10 +77,8 @@ const sampleBooks = [
     description: "El joven Harry Potter descubre que es un mago y comienza su educación en el Colegio Hogwarts.",
     publisher: "Salamandra",
     publishedYear: 1997,
-    coverImage: "/covers/harry-potter.jpg",
-    averageRating: 4.7,
-    ratingCount: 180000,
-    viewCount: 220000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9788478884452-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "El hobbit",
@@ -100,10 +87,8 @@ const sampleBooks = [
     description: "La aventura de Bilbo Bolsón, quien se une a una compañía de enanos para recuperar su hogar.",
     publisher: "Minotauro",
     publishedYear: 1937,
-    coverImage: "/covers/hobbit.jpg",
-    averageRating: 4.6,
-    ratingCount: 120000,
-    viewCount: 150000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780618260300-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Juego de Tronos",
@@ -112,10 +97,8 @@ const sampleBooks = [
     description: "La lucha por el Trono de Hierro en los Siete Reinos de Poniente.",
     publisher: "Gigamesh",
     publishedYear: 1996,
-    coverImage: "/covers/juego-tronos.jpg",
-    averageRating: 4.5,
-    ratingCount: 95000,
-    viewCount: 130000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780553588484-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "El nombre del viento",
@@ -124,10 +107,8 @@ const sampleBooks = [
     description: "La historia de Kvothe, un hombre de leyenda que cuenta su propia historia.",
     publisher: "Plaza & Janés",
     publishedYear: 2007,
-    coverImage: "/covers/nombre-viento.jpg",
-    averageRating: 4.6,
-    ratingCount: 88000,
-    viewCount: 110000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780756404741-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
 
   // 📚 LITERATURA CLÁSICA
@@ -138,10 +119,8 @@ const sampleBooks = [
     description: "La historia de la familia Buendía en el pueblo mítico de Macondo.",
     publisher: "Debolsillo",
     publishedYear: 1967,
-    coverImage: "/covers/cien-anos-soledad.jpg",
-    averageRating: 4.7,
-    ratingCount: 145000,
-    viewCount: 180000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780060883287-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Don Quijote de la Mancha",
@@ -150,10 +129,8 @@ const sampleBooks = [
     description: "Las aventuras del ingenioso hidalgo Don Quijote y su fiel escudero Sancho Panza.",
     publisher: "Real Academia Española",
     publishedYear: 1605,
-    coverImage: "/covers/quijote.jpg",
-    averageRating: 4.4,
-    ratingCount: 98000,
-    viewCount: 120000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9788420412146-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Orgullo y prejuicio",
@@ -162,10 +139,8 @@ const sampleBooks = [
     description: "La historia de Elizabeth Bennet y Fitzwilliam Darcy en la Inglaterra del siglo XIX.",
     publisher: "Alma Europa",
     publishedYear: 1813,
-    coverImage: "/covers/orgullo-prejuicio.jpg",
-    averageRating: 4.5,
-    ratingCount: 112000,
-    viewCount: 140000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780141439518-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Crimen y castigo",
@@ -174,10 +149,8 @@ const sampleBooks = [
     description: "Un estudiante comete un asesinato y lucha con su conciencia y la justicia.",
     publisher: "Alianza Editorial",
     publishedYear: 1866,
-    coverImage: "/covers/crimen-castigo.jpg",
-    averageRating: 4.6,
-    ratingCount: 87000,
-    viewCount: 105000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780140449136-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Moby Dick",
@@ -186,10 +159,8 @@ const sampleBooks = [
     description: "La obsesiva persecución del capitán Ahab por la ballena blanca Moby Dick.",
     publisher: "Alianza Editorial",
     publishedYear: 1851,
-    coverImage: "/covers/moby-dick.jpg",
-    averageRating: 4.3,
-    ratingCount: 76000,
-    viewCount: 92000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780142437247-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
 
   // 🔍 MISTERIO Y SUSPENSO
@@ -200,10 +171,8 @@ const sampleBooks = [
     description: "Un profesor de simbología se ve envuelto en una conspiración que involucra a la Iglesia.",
     publisher: "Umbriel",
     publishedYear: 2003,
-    coverImage: "/covers/codigo-davinci.jpg",
-    averageRating: 4.2,
-    ratingCount: 135000,
-    viewCount: 170000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780307474278-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Asesinato en el Orient Express",
@@ -212,10 +181,8 @@ const sampleBooks = [
     description: "Hércules Poirot investiga un asesinato a bordo del famoso tren Orient Express.",
     publisher: "Espasa",
     publishedYear: 1934,
-    coverImage: "/covers/orient-express.jpg",
-    averageRating: 4.4,
-    ratingCount: 89000,
-    viewCount: 110000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780062693662-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "El silencio de los corderos",
@@ -224,10 +191,8 @@ const sampleBooks = [
     description: "Una agente del FBI busca la ayuda de un brillante asesino en serie para atrapar a otro.",
     publisher: "Booket",
     publishedYear: 1988,
-    coverImage: "/covers/silencio-corderos.jpg",
-    averageRating: 4.5,
-    ratingCount: 78000,
-    viewCount: 98000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780312924584-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "La chica del tren",
@@ -236,10 +201,8 @@ const sampleBooks = [
     description: "Una mujer que viaja diariamente en tren se ve involucrada en una investigación de desaparición.",
     publisher: "Planeta",
     publishedYear: 2015,
-    coverImage: "/covers/chica-tren.jpg",
-    averageRating: 4.1,
-    ratingCount: 95000,
-    viewCount: 120000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9781594634024-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Gone Girl",
@@ -248,10 +211,8 @@ const sampleBooks = [
     description: "La desaparición de Amy Dunne y las sospechas que recaen sobre su marido.",
     publisher: "Indicios",
     publishedYear: 2012,
-    coverImage: "/covers/gone-girl.jpg",
-    averageRating: 4.3,
-    ratingCount: 112000,
-    viewCount: 140000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780307588371-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
 
   // 💼 NO FICCIÓN
@@ -262,10 +223,8 @@ const sampleBooks = [
     description: "Una breve historia de la humanidad desde la evolución hasta la actualidad.",
     publisher: "Debate",
     publishedYear: 2014,
-    coverImage: "/covers/sapiens.jpg",
-    averageRating: 4.6,
-    ratingCount: 89000,
-    viewCount: 115000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "El hombre en busca de sentido",
@@ -274,10 +233,8 @@ const sampleBooks = [
     description: "Las experiencias de un psiquiatra en los campos de concentración nazis.",
     publisher: "Herder",
     publishedYear: 1946,
-    coverImage: "/covers/hombre-busca-sentido.jpg",
-    averageRating: 4.8,
-    ratingCount: 67000,
-    viewCount: 85000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780807014271-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Hábitos atómicos",
@@ -286,10 +243,8 @@ const sampleBooks = [
     description: "Una guía para construir buenos hábitos y eliminar los malos.",
     publisher: "Diana",
     publishedYear: 2018,
-    coverImage: "/covers/habitos-atomicos.jpg",
-    averageRating: 4.7,
-    ratingCount: 45000,
-    viewCount: 68000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Thinking, Fast and Slow",
@@ -298,10 +253,8 @@ const sampleBooks = [
     description: "Cómo tomamos decisiones y los sesgos que afectan nuestro pensamiento.",
     publisher: "Debate",
     publishedYear: 2011,
-    coverImage: "/covers/thinking-fast-slow.jpg",
-    averageRating: 4.5,
-    ratingCount: 56000,
-    viewCount: 72000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780374533557-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Educated",
@@ -310,10 +263,8 @@ const sampleBooks = [
     description: "La historia de una mujer que creció sin educación formal y llegó a Harvard.",
     publisher: "Lumen",
     publishedYear: 2018,
-    coverImage: "/covers/educated.jpg",
-    averageRating: 4.7,
-    ratingCount: 38000,
-    viewCount: 52000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780399590504-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
 
   // 🌍 REALISMO MÁGICO Y LATINOAMERICANA
@@ -324,10 +275,8 @@ const sampleBooks = [
     description: "La saga de la familia Trueba a lo largo de cuatro generaciones.",
     publisher: "Debolsillo",
     publishedYear: 1982,
-    coverImage: "/covers/casa-espiritus.jpg",
-    averageRating: 4.5,
-    ratingCount: 78000,
-    viewCount: 98000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780804172175-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Como agua para chocolate",
@@ -336,10 +285,8 @@ const sampleBooks = [
     description: "La historia de Tita y cómo sus emociones afectan la comida que prepara.",
     publisher: "Debolsillo",
     publishedYear: 1989,
-    coverImage: "/covers/agua-chocolate.jpg",
-    averageRating: 4.3,
-    ratingCount: 67000,
-    viewCount: 82000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780385721239-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Rayuela",
@@ -348,10 +295,8 @@ const sampleBooks = [
     description: "Una novela que puede leerse de múltiples formas, rompiendo la linealidad tradicional.",
     publisher: "Alfaguara",
     publishedYear: 1963,
-    coverImage: "/covers/rayuela.jpg",
-    averageRating: 4.4,
-    ratingCount: 45000,
-    viewCount: 58000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9788420420318-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "La fiesta del chivo",
@@ -360,10 +305,8 @@ const sampleBooks = [
     description: "La historia del dictador dominicano Rafael Trujillo y su asesinato.",
     publisher: "Alfaguara",
     publishedYear: 2000,
-    coverImage: "/covers/fiesta-chivo.jpg",
-    averageRating: 4.5,
-    ratingCount: 34000,
-    viewCount: 45000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780374528362-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Los detectives salvajes",
@@ -372,10 +315,8 @@ const sampleBooks = [
     description: "Dos poetas buscan a una escritora desaparecida en un viaje por el mundo.",
     publisher: "Anagrama",
     publishedYear: 1998,
-    coverImage: "/covers/detectives-salvajes.jpg",
-    averageRating: 4.6,
-    ratingCount: 29000,
-    viewCount: 38000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780374530884-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
 
   // 🎭 DRAMA Y CONTEMPORÁNEA
@@ -386,10 +327,8 @@ const sampleBooks = [
     description: "Las reflexiones de Holden Caulfield, un adolescente que cuestiona la sociedad.",
     publisher: "Alianza Editorial",
     publishedYear: 1951,
-    coverImage: "/covers/guardian-centeno.jpg",
-    averageRating: 4.2,
-    ratingCount: 112000,
-    viewCount: 140000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780316769488-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Matar a un ruiseñor",
@@ -398,10 +337,8 @@ const sampleBooks = [
     description: "Un abogado defiende a un hombre negro acusado injustamente en el sur de Estados Unidos.",
     publisher: "HarperCollins",
     publishedYear: 1960,
-    coverImage: "/covers/matar-ruiseñor.jpg",
-    averageRating: 4.7,
-    ratingCount: 134000,
-    viewCount: 165000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Las uvas de la ira",
@@ -410,10 +347,8 @@ const sampleBooks = [
     description: "La familia Joad emigra de Oklahoma a California durante la Gran Depresión.",
     publisher: "Penguin",
     publishedYear: 1939,
-    coverImage: "/covers/uvas-ira.jpg",
-    averageRating: 4.4,
-    ratingCount: 78000,
-    viewCount: 95000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780143039433-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "El gran Gatsby",
@@ -422,10 +357,8 @@ const sampleBooks = [
     description: "La vida del misterioso Jay Gatsby y su obsesión por Daisy Buchanan.",
     publisher: "Scribner",
     publishedYear: 1925,
-    coverImage: "/covers/gran-gatsby.jpg",
-    averageRating: 4.5,
-    ratingCount: 156000,
-    viewCount: 190000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "El retrato de Dorian Gray",
@@ -434,15 +367,10 @@ const sampleBooks = [
     description: "Un hombre permanece joven mientras su retrato envejece y muestra su corrupción.",
     publisher: "Alianza Editorial",
     publishedYear: 1890,
-    coverImage: "/covers/dorian-gray.jpg",
-    averageRating: 4.4,
-    ratingCount: 89000,
-    viewCount: 110000
-  }
-];
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780141439570-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
+  },
 
-// Agregar más libros para llegar a ~75
-const additionalBooks = [
   // Más ciencia ficción
   {
     title: "Fahrenheit 451",
@@ -451,10 +379,8 @@ const additionalBooks = [
     description: "En un futuro donde los libros están prohibidos, un bombero cuestiona su trabajo de quemarlos.",
     publisher: "Debolsillo",
     publishedYear: 1953,
-    coverImage: "/covers/fahrenheit-451.jpg",
-    averageRating: 4.3,
-    ratingCount: 89000,
-    viewCount: 112000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9781451673319-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
   {
     title: "Neuromante",
@@ -463,15 +389,12 @@ const additionalBooks = [
     description: "Un hacker es contratado para un trabajo que cambiará para siempre el ciberespacio.",
     publisher: "Minotauro",
     publishedYear: 1984,
-    coverImage: "/covers/neuromante.jpg",
-    averageRating: 4.2,
-    ratingCount: 45000,
-    viewCount: 58000
+    coverImage: "https://covers.openlibrary.org/b/isbn/9780441569595-L.jpg",
+    averageRating: 0, ratingCount: 0, viewCount: 0
   },
-  // ... (puedo agregar más libros si quieres llegar exactamente a 100)
 ];
 
-const allBooks = [...sampleBooks, ...additionalBooks];
+const allBooks = [...sampleBooks];
 
 async function populateDatabase() {
   try {

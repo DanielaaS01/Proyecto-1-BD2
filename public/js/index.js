@@ -354,7 +354,7 @@ class CarouselManager {
 
         return `
             <div class="book-card" onclick="openModal('${book._id}')" data-book-id="${book._id}">
-                <div class="book-cover">${book.coverImage || '📚'}</div>
+                <div class="book-cover"><img src="${book.coverImage || 'default-cover.png'}" alt="${book.title}"></div>
                 <div class="book-info">
                     <h4 class="book-title">${book.title}</h4>
                     <p class="book-author">${book.author}</p>
@@ -575,7 +575,7 @@ function createSearchResultItem(book, searchTerm) {
 
     return `
         <div class="search-result-item" onclick='selectSearchResult("${book._id}")'>
-            <div class="search-result-cover">${book.coverImage || '📚'}</div>
+            <div class="search-result-cover"><img src="${book.coverImage || 'default-cover.png'}" alt="${book.title}"></div>
             <div class="search-result-info">
                 <div class="search-result-title">${highlightedTitle}</div>
                 <div class="search-result-author">${highlightedAuthor}</div>
@@ -667,8 +667,7 @@ async function openModal(bookId) {
         document.getElementById('modal-title').textContent = book.title;
         document.getElementById('modal-author').textContent = book.author;
         document.getElementById('modal-description').textContent = book.description;
-        document.getElementById('modal-cover').textContent = book.coverImage || '📚';
-        
+        document.getElementById('modal-cover').innerHTML = `<img src="${book.coverImage || 'default-cover.png'}" alt="${book.title}">`;        
         updateReviewsDisplay(averageRating, totalReviews, breakdown);
         
         loadUserRating(bookId);
@@ -819,7 +818,7 @@ async function showRecommendations(bookId) {
 function createRecommendationItem(book) {
     return `
         <div class="recommendation-item" onclick='closeModal(); openModal("${book._id}")'>
-            <div class="recommendation-cover">${book.coverImage || '📚'}</div>
+            <div class="recommendation-cover"><img src="${book.coverImage || 'default-cover.png'}" alt="${book.title}"></div>
             <div class="recommendation-title">${book.title}</div>
         </div>
     `;

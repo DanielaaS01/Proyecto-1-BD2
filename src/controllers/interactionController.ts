@@ -1,5 +1,7 @@
 import { Response } from 'express';
-import { InteractionService } from '../services/interactionService';
+import { 
+  InteractionService 
+} from '../services/interactionService';
 import { AuthRequest } from '../types/auth';
 
 /**
@@ -304,6 +306,29 @@ export const addToWishlist = async (req: AuthRequest, res: Response): Promise<vo
 
   } catch (error) {
     console.error('Error en controlador de agregar a wishlist:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+/**
+ * Controlador para obtener el desglose de reseñas de un libro
+ */
+export const getReviewBreakdown = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { bookId } = req.params;
+    if (!bookId) {
+      res.status(400).json({ success: false, message: 'ID de libro requerido' });
+      return;
+    }
+
+    const response = await InteractionService.getReviewBreakdown(bookId);
+    res.status(response.success ? 200 : 500).json(response);
+
+  } catch (error) {
+    console.error('Error en controlador de desglose de reseñas:', error);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
