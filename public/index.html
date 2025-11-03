@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🗣 Eco Literario</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Outfit:wght@300;400;500;600;700;800;900&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/index.css">
+
+  <style>@view-transition { navigation: auto; }</style>
+</head>
+<body class="h-full">
+  
+  <header class="header">
+   <div class="header-content"><a href="/" id="site-name" class="logo">🗣 Eco Literario</a>
+    <div class="profile-section" onclick="toggleProfileDropdown()"><button class="profile-btn" id="profile-btn"> <span class="profile-initials" id="profile-initials">?</span> </button> <span class="profile-name" id="user-name">Iniciar Sesión</span>
+     <div class="profile-dropdown" id="profile-dropdown">
+        </div>
+    </div>
+   </div>
+  </header>
+  
+  <div class="auth-overlay" id="auth-overlay">
+   <div class="auth-container" id="auth-container">
+    
+    <div class="auth-form" id="login-form">
+     <div class="auth-header">
+      <h1 class="auth-title">Bienvenido de vuelta</h1>
+      <p class="auth-subtitle">Inicia sesión para continuar tu aventura literaria</p>
+     </div>
+     <form class="auth-form-content" onsubmit="handleLogin(event)">
+      <div class="form-group"><label for="login-email" class="form-label">Correo electrónico</label> <input type="email" id="login-email" class="form-input" placeholder="tu@email.com" required>
+      </div>
+      <div class="form-group"><label for="login-password" class="form-label">Contraseña</label> <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+      </div><button type="submit" class="auth-button primary"> <span class="button-text">Iniciar Sesión</span>
+       <div class="button-loader" style="display: none;">
+        <div class="loader-spinner"></div>
+       </div></button>
+      <div class="auth-divider"><span>¿No tienes cuenta?</span>
+      </div><button type="button" class="auth-button secondary" onclick="showRegister()"> Crear cuenta nueva </button>
+     </form>
+     <div class="auth-message" id="login-message" style="display: none;"></div>
+    </div>
+    
+    <div class="auth-form" id="register-form" style="display: none;">
+     <div class="auth-header">
+      <h1 class="auth-title">Únete a Eco Literario</h1>
+      <p class="auth-subtitle">Crea tu cuenta y descubre miles de libros increíbles</p>
+     </div>
+     <form class="auth-form-content" onsubmit="handleRegister(event)">
+      <div class="form-group"><label for="register-username" class="form-label">Nombre de usuario</label> <input type="text" id="register-username" class="form-input" placeholder="Tu nombre completo" required>
+      </div>
+      <div class="form-group"><label for="register-email" class="form-label">Correo electrónico</label> <input type="email" id="register-email" class="form-input" placeholder="tu@email.com" required>
+      </div>
+      <div class="form-group"><label for="register-password" class="form-label">Contraseña</label> <input type="password" id="register-password" class="form-input" placeholder="•••••••• (mín. 6 caracteres)" required minlength="6">
+      </div><button type="submit" class="auth-button primary"> <span class="button-text">Crear Cuenta</span>
+       <div class="button-loader" style="display: none;">
+        <div class="loader-spinner"></div>
+       </div></button>
+      <div class="auth-divider"><span>¿Ya tienes cuenta?</span>
+      </div><button type="button" class="auth-button secondary" onclick="showLogin()"> Iniciar sesión </button>
+     </form>
+     <div class="auth-message" id="register-message" style="display: none;"></div>
+    </div>
+    
+   </div>
+  </div>
+  
+  <div class="main-app" id="main-app">
+   
+   <section class="hero">
+    <div class="floating-elements">
+     <div class="floating-element floating-book">📖</div>
+     <div class="floating-element floating-circle"></div>
+     <div class="floating-element floating-book">📖</div>
+     <div class="floating-element floating-circle"></div>
+     <div class="floating-element floating-book">📖</div>
+     <div class="floating-element floating-circle"></div>
+    </div>
+    <div class="hero-content">
+     <h1 id="hero-title" class="hero-title">Descubre tu próxima lectura</h1>
+     <p id="hero-subtitle" class="hero-subtitle">Miles de libros esperan por ti en nuestra biblioteca digital cuidadosamente curada</p>
+     <div class="hero-search"><input type="text" id="search-input" class="hero-search-bar" placeholder="Buscar libros, autores, géneros...">
+      <div class="search-icon">
+       <svg viewbox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /></svg>
+      </div>
+      <div class="search-dropdown" id="search-dropdown"></div>
+     </div>
+     <div class="hero-stats">
+        <div class="stat-item"><span class="stat-number" id="stats-books">0</span> <span class="stat-label">Libros</span></div>
+       <div class="stat-item"><span class="stat-number" id="stats-users">0</span> <span class="stat-label">Lectores</span></div>
+       <div class="stat-item"><span class="stat-number" id="stats-reviews">0</span> <span class="stat-label">Reseñas</span></div>
+     </div>
+    </div>
+   </section>
+   
+   <main class="main-content">
+    
+    <section class="section">
+     <div class="section-header">
+      <h2 id="popular-section-title" class="section-title">Tendencias</h2>
+     </div>
+     <div class="carousel-wrapper"><button class="carousel-nav prev" id="popular-prev" onclick="moveCarousel('popular', -1)">
+       <svg viewbox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></svg></button>
+      <div class="carousel-track">
+       <div class="carousel-container" id="popular-carousel"></div>
+      </div><button class="carousel-nav next" id="popular-next" onclick="moveCarousel('popular', 1)">
+       <svg viewbox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></svg></button>
+      <div class="carousel-indicators" id="popular-indicators"></div>
+     </div>
+    </section>
+    
+    <section class="section">
+     <div class="section-header">
+      <h2 id="recommended-section-title" class="section-title">Para ti</h2>
+     </div>
+     <div class="carousel-wrapper"><button class="carousel-nav prev" id="recommended-prev" onclick="moveCarousel('recommended', -1)">
+       <svg viewbox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></svg></button>
+      <div class="carousel-track">
+       <div class="carousel-container" id="recommended-carousel"></div>
+      </div><button class="carousel-nav next" id="recommended-next" onclick="moveCarousel('recommended', 1)">
+       <svg viewbox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></svg></button>
+      <div class="carousel-indicators" id="recommended-indicators"></div>
+     </div>
+    </section>
+    
+   </main>
+   
+   <div class="modal-overlay" id="review-modal">
+    <div class="modal-content"><button class="modal-close" onclick="closeModal()">
+      <svg viewbox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg></button>
+     <div class="modal-body">
+      <div class="modal-cover" id="modal-cover">📚</div>
+      <div class="modal-info">
+       <h2 id="modal-title">Título del Libro</h2>
+       <p class="author" id="modal-author">Autor del Libro</p>
+       <p class="description" id="modal-description">Descripción del libro...</p>
+       <div class="reviews-summary-section">
+        <h3>Reseñas de lectores</h3>
+        <div class="overall-rating">
+         <div class="rating-overview">
+          <div class="average-rating"><span class="average-number" id="average-rating">0.0</span>
+           <div class="average-stars" id="average-stars"><span class="star empty">★</span> <span class="star empty">★</span> <span class="star empty">★</span> <span class="star empty">★</span> <span class="star empty">★</span></div>
+           <span class="total-reviews" id="total-reviews">basado en 0 reseñas</span>
+          </div>
+         </div>
+         <div class="rating-breakdown">
+          <div class="rating-bar-item"><span class="star-label">5 ★</span>
+           <div class="rating-bar"><div class="rating-fill" id="rating-5" style="width: 0%"></div></div>
+           <span class="rating-count" id="count-5">0</span>
+          </div>
+          <div class="rating-bar-item"><span class="star-label">4 ★</span>
+           <div class="rating-bar"><div class="rating-fill" id="rating-4" style="width: 0%"></div></div>
+           <span class="rating-count" id="count-4">0</span>
+          </div>
+          <div class="rating-bar-item"><span class="star-label">3 ★</span>
+           <div class="rating-bar"><div class="rating-fill" id="rating-3" style="width: 0%"></div></div>
+           <span class="rating-count" id="count-3">0</span>
+          </div>
+          <div class="rating-bar-item"><span class="star-label">2 ★</span>
+           <div class="rating-bar"><div class="rating-fill" id="rating-2" style="width: 0%"></div></div>
+           <span class="rating-count" id="count-2">0</span>
+          </div>
+          <div class="rating-bar-item"><span class="star-label">1 ★</span>
+           <div class="rating-bar"><div class="rating-fill" id="rating-1" style="width: 0%"></div></div>
+           <span class="rating-count" id="count-1">0</span>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="rating-section">
+        <h3>Tu valoración</h3>
+        <div class="interactive-stars" id="interactive-stars"><span class="interactive-star" data-rating="1">★</span> <span class="interactive-star" data-rating="2">★</span> <span class="interactive-star" data-rating="3">★</span> <span class="interactive-star" data-rating="4">★</span> <span class="interactive-star" data-rating="5">★</span>
+        </div>
+        <div class="rating-message" id="rating-message" style="display: none;">
+         <p>¡Gracias por tu valoración!</p>
+        </div>
+        <div class="recommendations-section" id="recommendations-section">
+         <h4>USUARIOS QUE COMPARTEN UNA OPINIÓN SIMILAR LES GUSTÓ:</h4>
+         <div class="recommendations-grid" id="recommendations-grid"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   
+  </div> <script src="js/index.js"></script>
+
+ </body>
+</html>
