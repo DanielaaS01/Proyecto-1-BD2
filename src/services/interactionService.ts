@@ -347,4 +347,34 @@ export class InteractionService {
       };
     }
   }
+  /**
+   * Obtener la valoración específica de un usuario para un libro
+   */
+  static async getUserRatingForBook(userId: string, bookId: string): Promise<{ success: boolean; data?: { ratingValue: number | null } }> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(bookId)) {
+        return { success: false, data: { ratingValue: null } };
+      }
+
+      const interaction = await UserInteraction.findOne({
+        userId: new mongoose.Types.ObjectId(userId),
+        bookId: new mongoose.Types.ObjectId(bookId),
+        interactionType: 'rating'
+      }).lean();
+
+      return {
+        success: true,
+        data: {
+          ratingValue: interaction ? interaction.ratingValue || null : null
+        }
+      };
+
+    } catch (error: any) {
+      console.error('Error obteniendo la valoración del usuario:', error);
+      return {
+        success: false,
+        data: { ratingValue: null }
+      };
+    }
+  }
 }
