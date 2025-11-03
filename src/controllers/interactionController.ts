@@ -334,30 +334,4 @@ export const getReviewBreakdown = async (req: AuthRequest, res: Response): Promi
       message: 'Error interno del servidor'
     });
   }
-  
-};
-
- /**
- * Controlador para obtener la valoración de un usuario para un libro
- */
-export const getUserRatingForBook = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    if (!req.user) {
-      res.status(401).json({ success: false, message: 'Usuario no autenticado' });
-      return;
-    }
-
-    const { bookId } = req.params;
-    const userId = req.user._id.toString();
-
-    const response = await InteractionService.getUserRatingForBook(userId, bookId);
-    res.status(response.success ? 200 : 500).json(response);
-
-  } catch (error) {
-    console.error('Error en controlador de valoración de usuario:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor'
-    });
-  }
 };

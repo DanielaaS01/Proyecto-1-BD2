@@ -8,8 +8,7 @@ import {
   recordBookView,
   recordBookRating,
   addToWishlist,
-  getReviewBreakdown,
-  getUserRatingForBook 
+  getReviewBreakdown // <-- AÑADIDO
 } from '../controllers/interactionController';
 import { authenticate } from '../middleware/auth';
 
@@ -18,7 +17,6 @@ const router = Router();
 // Todas las rutas requieren autenticación
 router.get('/breakdown/:bookId', getReviewBreakdown);
 router.use(authenticate);
-router.get('/user-rating/:bookId', getUserRatingForBook);
 
 // Rutas principales
 router.post('/', recordInteraction);
